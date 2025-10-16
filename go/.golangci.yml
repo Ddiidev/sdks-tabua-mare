@@ -1,0 +1,19 @@
+# golangci-lint configuration for Go SDK
+# Documentation: https://golangci-lint.run/usage/configuration/
+
+linters:
+  enable:
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Vet examines Go source code
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Static analysis checks
+    - unused        # Check for unused code
+    - gofmt         # Check code formatting
+    - goimports     # Check import formatting
+    - misspell      # Check for misspelled words
+    - revive        # Fast, configurable linter
+
+run:
+  timeout: 5m
+  tests: true

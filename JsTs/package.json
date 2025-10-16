@@ -1,0 +1,53 @@
+{
+  "name": "tabua-mare-sdk",
+  "version": "1.0.4",
+  "description": "SDK JavaScript/TypeScript para a API Tábua de Marés do Brasil",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "browser": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "import": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/unit.test.js",
+    "test:example": "node test/example.js",
+    "test:esm": "node test/example-esm.js",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "tabua",
+    "mare",
+    "tides",
+    "api",
+    "brasil",
+    "brazil",
+    "ocean",
+    "oceanografia",
+    "navegacao",
+    "pesca",
+    "surf"
+  ],
+  "author": "Tabua Mare Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ddiidev/tabua_mare_api"
+  },
+  "bugs": {
+    "url": "https://github.com/Ddiidev/tabua_mare_api/issues"
+  },
+  "homepage": "https://tabuamare.devtu.qzz.io",
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}

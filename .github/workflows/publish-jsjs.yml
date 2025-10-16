@@ -1,0 +1,59 @@
+name: Test and Publish JS/TS SDK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "JsTs/**"
+      - ".github/workflows/publish-jsjs.yml"
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    defaults:
+      run:
+        working-directory: JsTs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: npm install --if-present
+
+      - name: Run tests
+        run: npm test
+
+      - name: Set version with commit hash
+        run: |
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          BASE_VERSION=$(echo $CURRENT_VERSION | cut -d'-' -f1)
+          NEW_VERSION="${BASE_VERSION}-${COMMIT_SHORT}"
+          npm version $NEW_VERSION --no-git-tag-version
+          echo "✅ Version set to: $NEW_VERSION"
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

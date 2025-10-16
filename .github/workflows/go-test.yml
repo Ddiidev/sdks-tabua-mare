@@ -1,0 +1,114 @@
+name: Go SDK Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'go/**'
+      - '.github/workflows/go-test.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'go/**'
+      - '.github/workflows/go-test.yml'
+
+jobs:
+  test:
+    name: Test Go SDK
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.21', '1.22', '1.23']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('go/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ matrix.go-version }}-
+
+    - name: Download dependencies
+      working-directory: ./go
+      run: go mod download
+
+    - name: Verify dependencies
+      working-directory: ./go
+      run: go mod verify
+
+    - name: Run go vet
+      working-directory: ./go
+      run: go vet ./...
+
+    - name: Run go fmt
+      working-directory: ./go
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not formatted. Run 'go fmt ./...'"
+          gofmt -s -l .
+          exit 1
+        fi
+
+    - name: Run unit tests
+      working-directory: ./go
+      run: go test -v -race -timeout 30s ./...
+
+    - name: Run integration tests
+      working-directory: ./go
+      run: go test -v -race -timeout 60s -tags=integration ./...
+      continue-on-error: true
+
+  lint:
+    name: Lint Go SDK
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: v1.62
+        working-directory: ./go
+        args: --timeout=5m
+
+  build:
+    name: Build Go SDK
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Build
+      working-directory: ./go
+      run: go build -v ./...
+
+    - name: Build examples
+      working-directory: ./go
+      run: |
+        go build -v ./examples/basic
+        go build -v ./examples/advanced
+        go build -v ./cmd/test
