@@ -88,3 +88,16 @@ type TideTableResponse struct {
 	Total int         `json:"total"`
 	Error *APIError   `json:"error,omitempty"`
 }
+
+// NearestHarbor representa o porto mais próximo de uma coordenada
+type NearestHarbor struct {
+	Harbor
+	Distance float64 `json:"distance_km"`
+}
+
+// NearestHarborResponse representa a resposta da consulta de porto mais próximo
+type NearestHarborResponse struct {
+	Data  []NearestHarbor `json:"data"`
+	Total int             `json:"total"`
+	Error *APIError       `json:"error,omitempty"`
+}

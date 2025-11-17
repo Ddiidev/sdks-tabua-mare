@@ -69,6 +69,10 @@ export interface TabuaMare {
   months: TideMonth[];
 }
 
+export interface NearestHarbor extends Harbor {
+  // O endpoint nearest-harbor retorna um Harbor regular, sem informação de distância
+}
+
 /**
  * Cliente principal da API Tábua de Marés
  */
@@ -127,4 +131,11 @@ export class TabuaMareClient {
     harborId: number,
     month: number
   ): Promise<ApiResponse<TabuaMare[]>>;
+
+  /**
+   * Obtém o porto mais próximo de uma coordenada geográfica
+   * @param lat - Latitude (-90 a 90)
+   * @param lng - Longitude (-180 a 180)
+   */
+  getNearestHarbor(lat: number, lng: number): Promise<ApiResponse<NearestHarbor[]>>;
 }

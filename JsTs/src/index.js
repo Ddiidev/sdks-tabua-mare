@@ -148,6 +148,40 @@ class TabuaMareClient {
   async getTabuaMareMonth(harborId, month) {
     return this.getTabuaMare(harborId, month, '[1-31]');
   }
+
+  /**
+   * Obtém o porto mais próximo de uma coordenada geográfica
+   * @param {number} lat - Latitude (-90 a 90)
+   * @param {number} lng - Longitude (-180 a 180)
+   * @returns {Promise<{data: Array, total: number}>}
+   */
+  async getNearestHarbor(lat, lng) {
+    if (typeof lat !== 'number' || typeof lng !== 'number') {
+      throw new Error('Latitude e longitude devem ser números');
+    }
+
+    if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
+      throw new Error('Latitude e longitude devem ser números válidos');
+    }
+
+    if (lat < -90 || lat > 90) {
+      throw new Error('Latitude deve estar entre -90 e 90 graus');
+    }
+
+    if (lng < -180 || lng > 180) {
+      throw new Error('Longitude deve estar entre -180 e 180 graus');
+    }
+
+    const latLng = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+    const response = await this.http.get(`${this.baseUrl}/nearest-harbor-independent-state/${latLng}`);
+    
+    // O endpoint nearest-harbor retorna o porto diretamente, não envolto em data
+    // Então precisamos embrulhar na estrutura esperada
+    return {
+      data: [response],
+      total: 1
+    };
+  }
 }
 
 // Exporta para diferentes ambientes

@@ -50,6 +50,7 @@ async function runTests() {
     assert.strictEqual(typeof client.getHarborsByState, 'function', 'Método getHarborsByState não existe');
     assert.strictEqual(typeof client.getHarbors, 'function', 'Método getHarbors não existe');
     assert.strictEqual(typeof client.getTabuaMare, 'function', 'Método getTabuaMare não existe');
+    assert.strictEqual(typeof client.getNearestHarbor, 'function', 'Método getNearestHarbor não existe');
   });
 
   // Teste 2: Listar estados
@@ -141,6 +142,65 @@ async function runTests() {
     assert.ok(hour.hour, 'Hora deve ter campo hour');
     assert.ok(typeof hour.level === 'number', 'level deve ser um número');
     assert.ok(hour.level >= 0, 'level deve ser maior ou igual a 0');
+  });
+
+  // Teste 9: Obter porto mais próximo - coordenadas válidas
+  await test('getNearestHarbor() deve retornar porto mais próximo', async () => {
+    const result = await client.getNearestHarbor(-23.550520, -46.633308);
+    assert.ok(result, 'Resultado não deve ser nulo');
+    assert.ok(result.data, 'Resultado deve ter propriedade data');
+    assert.ok(Array.isArray(result.data), 'data deve ser um array');
+    assert.ok(result.data.length > 0, 'Deve retornar pelo menos um porto');
+
+    const nearestHarbor = result.data[0];
+    assert.ok(nearestHarbor.id, 'Porto deve ter ID');
+    assert.ok(nearestHarbor.harbor_name, 'Porto deve ter nome');
+    assert.ok(nearestHarbor.state, 'Porto deve ter estado');
+  });
+
+  // Teste 10: Obter porto mais próximo - validação de latitude
+  await test('getNearestHarbor() deve validar latitude', async () => {
+    try {
+      await client.getNearestHarbor(91, -46.633308);
+      assert.fail('Deveria ter lançado erro para latitude inválida');
+    } catch (error) {
+      assert.ok(error.message.includes('Latitude deve estar entre'), 'Erro deve mencionar intervalo de latitude');
+    }
+  });
+
+  // Teste 11: Obter porto mais próximo - validação de longitude
+  await test('getNearestHarbor() deve validar longitude', async () => {
+    try {
+      await client.getNearestHarbor(-23.550520, 181);
+      assert.fail('Deveria ter lançado erro para longitude inválida');
+    } catch (error) {
+      assert.ok(error.message.includes('Longitude deve estar entre'), 'Erro deve mencionar intervalo de longitude');
+    }
+  });
+
+  // Teste 12: Obter porto mais próximo - validação de tipos
+  await test('getNearestHarbor() deve validar tipos de entrada', async () => {
+    try {
+      await client.getNearestHarbor('invalid', -46.633308);
+      assert.fail('Deveria ter lançado erro para tipo inválido');
+    } catch (error) {
+      assert.ok(error.message.includes('Latitude e longitude devem ser números'), 'Erro deve mencionar tipo esperado');
+    }
+  });
+
+  // Teste 13: Obter porto mais próximo - coordenadas de exemplo conhecidas
+  await test('getNearestHarbor() deve funcionar com coordenadas do Rio de Janeiro', async () => {
+    const result = await client.getNearestHarbor(-22.906847, -43.172896); // Rio de Janeiro
+    assert.ok(result, 'Resultado não deve ser nulo');
+    assert.ok(result.data, 'Resultado deve ter propriedade data');
+    assert.ok(result.data.length > 0, 'Deve retornar pelo menos um porto');
+    
+    const nearestHarbor = result.data[0];
+    assert.ok(nearestHarbor.state, 'Porto deve ter estado');
+    // O porto mais próximo do RJ deve ser no RJ ou estado vizinho
+    const validStates = ['rj', 'sp', 'es'];
+    assert.ok(validStates.includes(nearestHarbor.state.toLowerCase()), 
+      `Estado ${nearestHarbor.state} deve ser próximo ao RJ`);
   });
 
   // Resumo dos testes

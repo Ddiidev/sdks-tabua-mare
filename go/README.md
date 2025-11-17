@@ -82,6 +82,13 @@ func main() {
             }
         }
     }
+    
+    // Encontrar porto mais próximo de São Paulo
+    nearestHarbor, err := client.GetNearestHarbor(ctx, -23.550520, -46.633308)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Porto mais próximo: %s (%.1f km)\n", nearestHarbor.HarborName, nearestHarbor.Distance)
 }
 ```
 
@@ -91,6 +98,7 @@ func main() {
 - ✅ Consulta de portos por estado
 - ✅ Detalhes completos de portos
 - ✅ Tábua de marés por período
+- ✅ **Porto mais próximo por coordenadas GPS**
 - ✅ Suporte a múltiplos portos
 - ✅ Validação de parâmetros
 - ✅ Tratamento de erros robusto

@@ -102,6 +102,11 @@ async function exemploCompleto() {
     const tabuaMare = await client.getTabuaMareMonth(1, month);
     console.log('   Tábua de Maré:', tabuaMare);
 
+    // 5. Obter porto mais próximo de coordenadas
+    console.log('\n5️⃣  Buscando porto mais próximo de Florianópolis...');
+    const nearestHarbor = await client.getNearestHarbor(-27.5954, -48.5480);
+    console.log('   Porto mais próximo:', nearestHarbor);
+
   } catch (error) {
     console.error('\n❌ Erro na execução:', error.message);
     console.error('   Detalhes:', error);
@@ -192,6 +197,11 @@ import { TabuaMareClient } from 'tabua-mare-sdk';
     console.log('5️⃣  getTabuaMareMonth(1, 1)');
     const tabuaMareMonth = await client.getTabuaMareMonth(1, 1);
     console.log(JSON.stringify(tabuaMareMonth, null, 2));
+    console.log('\n───────────────────────────────────────\n');
+
+    console.log('6️⃣  getNearestHarbor(-27.5954, -48.5480)');
+    const nearestHarbor = await client.getNearestHarbor(-27.5954, -48.5480);
+    console.log(JSON.stringify(nearestHarbor, null, 2));
 
   } catch (error) {
     console.error('❌ Erro:', error);

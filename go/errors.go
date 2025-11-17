@@ -23,6 +23,9 @@ var (
 
 	// ErrRateLimitExceeded é retornado quando o limite de requisições é excedido
 	ErrRateLimitExceeded = errors.New("rate limit exceeded: 500 requests per minute")
+
+	// ErrInvalidCoordinates é retornado quando as coordenadas geográficas são inválidas
+	ErrInvalidCoordinates = errors.New("invalid coordinates")
 )
 
 // APIError representa um erro retornado pela API
