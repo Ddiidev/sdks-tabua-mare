@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>TabuaMare</RootNamespace>
+    <AssemblyName>TabuaMare</AssemblyName>
+    <PackageId>TabuaMare.SDK</PackageId>
+    <Version>2.0.0</Version>
+    <Authors>Tabua Mare Contributors</Authors>
+    <Description>SDK C# para a API Tábua de Marés do Brasil (v2)</Description>
+    <PackageTags>tábua;mare;tides;api;brasil;brazil;ocean</PackageTags>
+    <PackageProjectUrl>https://tabuamare.api.br</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Ddiidev/sdks-tabua-mare</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>TabuaMare.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>
