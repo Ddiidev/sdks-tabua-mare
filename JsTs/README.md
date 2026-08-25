@@ -10,7 +10,9 @@ Este SDK faz parte do ecossistema Tábua da Maré:
 - 📄 **Processador de Dados**: [tabua_mare_convert_pdf2db](https://github.com/Ddiidev/tabua_mare_convert_pdf2db) - Converte PDFs de tábua da maré para o banco de dados
 - 📦 **SDKs**: [sdks-tabua-marea](https://github.com/Ddiidev/sdks-tabua-marea) - Repositório com SDKs para diversas linguagens
 
-Para mais informações, acesse: [tabuamare.devtu.qzz.io](https://tabuamare.devtu.qzz.io)
+Para mais informações, acesse: [tabuamare.api.br](https://tabuamare.api.br)
+
+> **⚠️ v2:** a API migrou para `https://tabuamare.api.br/api/v2`. A v1 foi descontinuada (HTTP 410). Os IDs de porto agora são strings (ex: `pb01`, `pe02`). Opcionalmente configure uma `apiKey` para mais requisições por minuto.
 
 ## Características
 
@@ -19,6 +21,8 @@ Para mais informações, acesse: [tabuamare.devtu.qzz.io](https://tabuamare.devt
 - ✅ Zero dependências
 - ✅ API simples e intuitiva
 - ✅ Totalmente tipado
+- ✅ Autenticação opcional via api_key
+- ✅ Porto mais próximo (geral e por estado) e tábua por geolocalização
 
 ## Instalação
 
@@ -99,7 +103,7 @@ async function exemploCompleto() {
     const now = new Date();
     const month = now.getMonth() + 1;
     console.log(`\n4️⃣  Buscando tábua de maré do mês ${month}...`);
-    const tabuaMare = await client.getTabuaMareMonth(1, month);
+    const tabuaMare = await client.getTabuaMareMonth('pb01', month);
     console.log('   Tábua de Maré:', tabuaMare);
 
     // 5. Obter porto mais próximo de coordenadas
@@ -184,24 +188,29 @@ import { TabuaMareClient } from 'tabua-mare-sdk';
     console.log(JSON.stringify(harbors, null, 2));
     console.log('\n───────────────────────────────────────\n');
 
-    console.log('3️⃣  getHarbors(1)');
-    const harbor = await client.getHarbors(1);
+    console.log('3️⃣  getHarbors("pb01")');
+    const harbor = await client.getHarbors('pb01');
     console.log(JSON.stringify(harbor, null, 2));
     console.log('\n───────────────────────────────────────\n');
 
-    console.log('4️⃣  getTabuaMare(1, 1, [1, 2, 3])');
-    const tabuaMare = await client.getTabuaMare(1, 1, [1, 2, 3]);
+    console.log('4️⃣  getTabuaMare("pb01", 1, [1, 2, 3])');
+    const tabuaMare = await client.getTabuaMare('pb01', 1, [1, 2, 3]);
     console.log(JSON.stringify(tabuaMare, null, 2));
     console.log('\n───────────────────────────────────────\n');
 
-    console.log('5️⃣  getTabuaMareMonth(1, 1)');
-    const tabuaMareMonth = await client.getTabuaMareMonth(1, 1);
+    console.log('5️⃣  getTabuaMareMonth("pb01", 1)');
+    const tabuaMareMonth = await client.getTabuaMareMonth('pb01', 1);
     console.log(JSON.stringify(tabuaMareMonth, null, 2));
     console.log('\n───────────────────────────────────────\n');
 
     console.log('6️⃣  getNearestHarbor(-27.5954, -48.5480)');
     const nearestHarbor = await client.getNearestHarbor(-27.5954, -48.5480);
     console.log(JSON.stringify(nearestHarbor, null, 2));
+    console.log('\n───────────────────────────────────────\n');
+
+    console.log('7️⃣  getGeoTabuaMare(-27.5954, -48.5480, "sc", 1, [1, 2])');
+    const geoTide = await client.getGeoTabuaMare(-27.5954, -48.5480, 'sc', 1, [1, 2]);
+    console.log(JSON.stringify(geoTide, null, 2));
 
   } catch (error) {
     console.error('❌ Erro:', error);

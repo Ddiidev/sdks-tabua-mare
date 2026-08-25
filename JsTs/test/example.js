@@ -26,8 +26,8 @@ async function runExamples() {
     console.log('');
     
     // 3. Obter detalhes de um porto
-    console.log('3. Obtendo detalhes do porto ID 27...');
-    const harborDetails = await client.getHarbors(27);
+    console.log('3. Obtendo detalhes do porto pb01...');
+    const harborDetails = await client.getHarbors('pb01');
     const harbor = harborDetails.data[0];
     console.log(`   Nome: ${harbor.harbor_name}`);
     console.log(`   Estado: ${harbor.state.toUpperCase()}`);
@@ -36,7 +36,7 @@ async function runExamples() {
     
     // 4. Obter tábua de maré para dias específicos
     console.log('4. Obtendo tábua de maré para dias 1, 2 e 3 de janeiro...');
-    const tides = await client.getTabuaMare(1, 1, [1, 2, 3]);
+    const tides = await client.getTabuaMare('pb01', 1, [1, 2, 3]);
     const tideData = tides.data[0];
     console.log(`   Porto: ${tideData.harbor_name}`);
     console.log(`   Mês: ${tideData.months[0].month_name}`);
@@ -52,7 +52,7 @@ async function runExamples() {
     
     // 5. Obter tábua de maré para um período
     console.log('5. Obtendo tábua de maré para primeira semana de janeiro...');
-    const weekTides = await client.getTabuaMareRange(1, 1, 1, 7);
+    const weekTides = await client.getTabuaMareRange('pb01', 1, 1, 7);
     console.log(`   Dias retornados: ${weekTides.data[0].months[0].days.length}\n`);
     
     console.log('✅ Todos os exemplos executados com sucesso!');

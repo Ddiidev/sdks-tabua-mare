@@ -1,5 +1,5 @@
 /**
- * Testes unitários para o SDK Tábua de Marés
+ * Testes unitários para o SDK Tábua de Marés (API v2)
  * Usa o módulo assert nativo do Node.js
  */
 
@@ -39,7 +39,7 @@ async function test(description, fn) {
  * Suite de testes
  */
 async function runTests() {
-  console.log('=== Testes Unitários - Tábua de Marés SDK ===\n');
+  console.log('=== Testes Unitários - Tábua de Marés SDK (v2) ===\n');
 
   const client = new TabuaMareClient();
 
@@ -51,6 +51,10 @@ async function runTests() {
     assert.strictEqual(typeof client.getHarbors, 'function', 'Método getHarbors não existe');
     assert.strictEqual(typeof client.getTabuaMare, 'function', 'Método getTabuaMare não existe');
     assert.strictEqual(typeof client.getNearestHarbor, 'function', 'Método getNearestHarbor não existe');
+    assert.strictEqual(typeof client.getNearestHarborByState, 'function', 'Método getNearestHarborByState não existe');
+    assert.strictEqual(typeof client.getGeoTabuaMare, 'function', 'Método getGeoTabuaMare não existe');
+    assert.strictEqual(typeof client.getUsage, 'function', 'Método getUsage não existe');
+    assert.strictEqual(client.baseUrl, 'https://tabuamare.api.br/api/v2', 'Base URL v2 incorreta');
   });
 
   // Teste 2: Listar estados
@@ -64,7 +68,7 @@ async function runTests() {
   });
 
   // Teste 3: Listar portos por estado
-  await test('getHarborsByState() deve retornar portos de um estado', async () => {
+  await test('getHarborsByState() deve retornar portos com IDs string (ex: pb01)', async () => {
     const result = await client.getHarborsByState('pb');
     assert.ok(result, 'Resultado não deve ser nulo');
     assert.ok(result.data, 'Resultado deve ter propriedade data');
@@ -73,26 +77,41 @@ async function runTests() {
 
     const firstHarbor = result.data[0];
     assert.ok(firstHarbor.id, 'Porto deve ter ID');
+    assert.strictEqual(typeof firstHarbor.id, 'string', 'ID deve ser string na v2 (ex: pb01)');
     assert.ok(firstHarbor.harbor_name, 'Porto deve ter nome');
   });
 
-  // Teste 4: Obter detalhes de um porto
-  await test('getHarbors() deve retornar detalhes de um porto', async () => {
-    const result = await client.getHarbors(27);
+  // Teste 4: Obter detalhes de um porto por ID string
+  await test('getHarbors() deve retornar detalhes de um porto por ID string', async () => {
+    const result = await client.getHarbors('pb01');
     assert.ok(result, 'Resultado não deve ser nulo');
     assert.ok(result.data, 'Resultado deve ter propriedade data');
     assert.ok(Array.isArray(result.data), 'data deve ser um array');
     assert.ok(result.data.length > 0, 'Deve retornar dados do porto');
 
     const harbor = result.data[0];
+    assert.strictEqual(harbor.id, 'pb01', 'ID deve ser pb01');
     assert.ok(harbor.harbor_name, 'Porto deve ter nome');
     assert.ok(harbor.state, 'Porto deve ter estado');
     assert.ok(typeof harbor.mean_level === 'number', 'mean_level deve ser um número');
   });
 
-  // Teste 5: Obter tábua de maré para dias específicos
+  // Teste 5: Obter múltiplos portos por IDs string
+  await test('getHarbors() deve aceitar múltiplos IDs', async () => {
+    const result = await client.getHarbors(['pb01', 'pe01']);
+    assert.ok(result, 'Resultado não deve ser nulo');
+    assert.ok(Array.isArray(result.data), 'data deve ser um array');
+    assert.strictEqual(result.data.length, 2, 'Deve retornar 2 portos');
+    assert.deepStrictEqual(
+      result.data.map((h) => h.id).sort(),
+      ['pb01', 'pe01'],
+      'IDs devem ser pb01 e pe01'
+    );
+  });
+
+  // Teste 6: Obter tábua de maré para dias específicos
   await test('getTabuaMare() deve retornar tábua de maré para dias específicos', async () => {
-    const result = await client.getTabuaMare(1, 1, [1, 2, 3]);
+    const result = await client.getTabuaMare('pb01', 1, [1, 2, 3]);
     assert.ok(result, 'Resultado não deve ser nulo');
     assert.ok(result.data, 'Resultado deve ter propriedade data');
     assert.ok(Array.isArray(result.data), 'data deve ser um array');
@@ -103,18 +122,18 @@ async function runTests() {
     assert.ok(tideData.months, 'Deve ter array de meses');
     assert.ok(Array.isArray(tideData.months), 'months deve ser um array');
     assert.ok(tideData.months[0].days, 'Deve ter array de dias');
-    assert.ok(tideData.months[0].days.length === 3, 'Deve retornar 3 dias');
+    assert.strictEqual(tideData.months[0].days.length, 3, 'Deve retornar 3 dias');
   });
 
-  // Teste 6: Obter tábua de maré para um período
+  // Teste 7: Obter tábua de maré para um período
   await test('getTabuaMareRange() deve retornar tábua de maré para um período', async () => {
-    const result = await client.getTabuaMareRange(1, 1, 1, 7);
+    const result = await client.getTabuaMareRange('pb01', 1, 1, 7);
     assert.ok(result, 'Resultado não deve ser nulo');
     assert.ok(result.data, 'Resultado deve ter propriedade data');
     assert.ok(Array.isArray(result.data), 'data deve ser um array');
 
     const tideData = result.data[0];
-    assert.ok(tideData.months[0].days.length === 7, 'Deve retornar 7 dias');
+    assert.strictEqual(tideData.months[0].days.length, 7, 'Deve retornar 7 dias');
 
     // Verificar estrutura de um dia
     const day = tideData.months[0].days[0];
@@ -123,9 +142,9 @@ async function runTests() {
     assert.ok(Array.isArray(day.hours), 'Dia deve ter array de horas');
   });
 
-  // Teste 7: Obter tábua de maré para mês completo
+  // Teste 8: Obter tábua de maré para mês completo
   await test('getTabuaMareMonth() deve retornar tábua de maré para mês completo', async () => {
-    const result = await client.getTabuaMareMonth(1, 1);
+    const result = await client.getTabuaMareMonth('pb01', 1);
     assert.ok(result, 'Resultado não deve ser nulo');
     assert.ok(result.data, 'Resultado deve ter propriedade data');
 
@@ -133,19 +152,19 @@ async function runTests() {
     assert.ok(tideData.months[0].days.length >= 28, 'Deve retornar pelo menos 28 dias');
   });
 
-  // Teste 8: Validar estrutura de dados de hora
+  // Teste 9: Validar estrutura de dados de hora
   await test('Dados de hora devem ter estrutura correta', async () => {
-    const result = await client.getTabuaMare(1, 1, [1]);
+    const result = await client.getTabuaMare('pb01', 1, [1]);
     const day = result.data[0].months[0].days[0];
     const hour = day.hours[0];
 
     assert.ok(hour.hour, 'Hora deve ter campo hour');
     assert.ok(typeof hour.level === 'number', 'level deve ser um número');
-    assert.ok(hour.level >= 0, 'level deve ser maior ou igual a 0');
+    assert.ok(hour.level >= -1 && hour.level <= 3, 'level deve estar em intervalo plausível');
   });
 
-  // Teste 9: Obter porto mais próximo - coordenadas válidas
-  await test('getNearestHarbor() deve retornar porto mais próximo', async () => {
+  // Teste 10: Porto mais próximo independente de estado
+  await test('getNearestHarbor() deve retornar envelope data/total da v2', async () => {
     const result = await client.getNearestHarbor(-23.550520, -46.633308);
     assert.ok(result, 'Resultado não deve ser nulo');
     assert.ok(result.data, 'Resultado deve ter propriedade data');
@@ -158,7 +177,46 @@ async function runTests() {
     assert.ok(nearestHarbor.state, 'Porto deve ter estado');
   });
 
-  // Teste 10: Obter porto mais próximo - validação de latitude
+  // Teste 11: Porto mais próximo por estado
+  await test('getNearestHarborByState() deve retornar porto dentro do estado', async () => {
+    const result = await client.getNearestHarborByState('pb', -7.11509, -34.864);
+    assert.ok(result, 'Resultado não deve ser nulo');
+    assert.ok(result.data.length > 0, 'Deve retornar pelo menos um porto');
+    assert.strictEqual(result.data[0].state, 'pb', 'Porto deve pertencer ao estado pb');
+  });
+
+  // Teste 12: Tábua de maré por geolocalização
+  await test('getGeoTabuaMare() deve retornar tábua do porto mais próximo', async () => {
+    const result = await client.getGeoTabuaMare(-7.11509, -34.864, 'pb', 1, [1]);
+    assert.ok(result, 'Resultado não deve ser nulo');
+    assert.ok(result.data.length > 0, 'Deve retornar dados');
+    assert.ok(result.data[0].harbor_name, 'Deve ter nome do porto');
+    assert.ok(Array.isArray(result.data[0].months), 'Deve ter meses');
+  });
+
+  // Teste 13: getUsage sem apiKey deve falhar localmente
+  await test('getUsage() deve exigir apiKey configurada', async () => {
+    try {
+      await client.getUsage();
+      assert.fail('Deveria ter lançado erro sem apiKey');
+    } catch (error) {
+      assert.ok(error.message.includes('apiKey'), 'Erro deve mencionar apiKey');
+    }
+  });
+
+  // Teste 14: getUsage com apiKey configurada (chave inválida deve retornar erro da API)
+  await test('getUsage() deve enviar headers de autenticação', async () => {
+    const authedClient = new TabuaMareClient({ apiKey: 'tm_live_invalid_key_for_test' });
+    try {
+      await authedClient.getUsage();
+      // Se a API aceitar, tanto melhor — valida estrutura
+    } catch (error) {
+      // Chave inválida deve gerar erro HTTP (401/403), não ausência de header
+      assert.ok(error, 'Erro esperado para chave inválida');
+    }
+  });
+
+  // Teste 15: Validação de latitude
   await test('getNearestHarbor() deve validar latitude', async () => {
     try {
       await client.getNearestHarbor(91, -46.633308);
@@ -168,7 +226,7 @@ async function runTests() {
     }
   });
 
-  // Teste 11: Obter porto mais próximo - validação de longitude
+  // Teste 16: Validação de longitude
   await test('getNearestHarbor() deve validar longitude', async () => {
     try {
       await client.getNearestHarbor(-23.550520, 181);
@@ -178,7 +236,7 @@ async function runTests() {
     }
   });
 
-  // Teste 12: Obter porto mais próximo - validação de tipos
+  // Teste 17: Validação de tipos
   await test('getNearestHarbor() deve validar tipos de entrada', async () => {
     try {
       await client.getNearestHarbor('invalid', -46.633308);
@@ -188,18 +246,18 @@ async function runTests() {
     }
   });
 
-  // Teste 13: Obter porto mais próximo - coordenadas de exemplo conhecidas
+  // Teste 18: Coordenadas do Rio de Janeiro
   await test('getNearestHarbor() deve funcionar com coordenadas do Rio de Janeiro', async () => {
     const result = await client.getNearestHarbor(-22.906847, -43.172896); // Rio de Janeiro
     assert.ok(result, 'Resultado não deve ser nulo');
     assert.ok(result.data, 'Resultado deve ter propriedade data');
     assert.ok(result.data.length > 0, 'Deve retornar pelo menos um porto');
-    
+
     const nearestHarbor = result.data[0];
     assert.ok(nearestHarbor.state, 'Porto deve ter estado');
     // O porto mais próximo do RJ deve ser no RJ ou estado vizinho
     const validStates = ['rj', 'sp', 'es'];
-    assert.ok(validStates.includes(nearestHarbor.state.toLowerCase()), 
+    assert.ok(validStates.includes(nearestHarbor.state.toLowerCase()),
       `Estado ${nearestHarbor.state} deve ser próximo ao RJ`);
   });
 

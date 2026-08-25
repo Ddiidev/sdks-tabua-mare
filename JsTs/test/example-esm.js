@@ -28,7 +28,7 @@ async function exemploCompleto() {
     const now = new Date();
     const month = now.getMonth() + 1;
     console.log(`\n4️⃣  Buscando tábua de maré do mês ${month}...`);
-    const tabuaMare = await client.getTabuaMareMonth(1, month);
+    const tabuaMare = await client.getTabuaMareMonth('pb01', month);
     console.log('   Tábua de Maré:', tabuaMare);
 
   } catch (error) {
