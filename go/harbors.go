@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -35,23 +34,19 @@ func (c *Client) GetHarborNames(ctx context.Context, state string) ([]HarborName
 }
 
 // GetHarbors retorna informações detalhadas de um ou mais portos por IDs
-func (c *Client) GetHarbors(ctx context.Context, ids ...int) ([]Harbor, error) {
+// Os IDs são códigos no formato estado+sequência (ex: pb01, pe02)
+func (c *Client) GetHarbors(ctx context.Context, ids ...string) ([]Harbor, error) {
 	if len(ids) == 0 {
 		return nil, &ValidationError{Field: "ids", Message: "at least one harbor ID is required"}
 	}
 
 	for _, id := range ids {
-		if id <= 0 {
-			return nil, &ValidationError{Field: "ids", Message: "harbor IDs must be positive integers"}
+		if strings.TrimSpace(id) == "" {
+			return nil, ErrInvalidHarborID
 		}
 	}
 
-	idsStr := make([]string, len(ids))
-	for i, id := range ids {
-		idsStr[i] = strconv.Itoa(id)
-	}
-
-	path := fmt.Sprintf("/harbors/%s", strings.Join(idsStr, ","))
+	path := fmt.Sprintf("/harbors/[%s]", strings.Join(ids, ","))
 
 	body, err := c.doRequest(ctx, "GET", path)
 	if err != nil {
@@ -71,7 +66,7 @@ func (c *Client) GetHarbors(ctx context.Context, ids ...int) ([]Harbor, error) {
 }
 
 // GetHarbor retorna informações detalhadas de um porto específico
-func (c *Client) GetHarbor(ctx context.Context, id int) (*Harbor, error) {
+func (c *Client) GetHarbor(ctx context.Context, id string) (*Harbor, error) {
 	harbors, err := c.GetHarbors(ctx, id)
 	if err != nil {
 		return nil, err

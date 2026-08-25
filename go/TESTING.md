@@ -30,19 +30,24 @@ go run cmd/test/main.go
 
 ## 📋 O que é testado
 
-### Testes Unitários (`client_test.go`)
+### Testes Unitários (`client_test.go`, `nearest_harbor_test.go`, `v2_endpoints_test.go`)
 - ✅ Criação do cliente
 - ✅ Configuração de URL base customizada
 - ✅ Configuração de timeout
+- ✅ Configuração de api_key e headers de autenticação
 - ✅ Tratamento de respostas bem-sucedidas
-- ✅ Tratamento de rate limiting (429)
-- ✅ Tratamento de erros da API
+- ✅ Tratamento de rate limiting (429) com Retry-After
+- ✅ Tratamento de erros da API (envelope aninhado `error.message`)
+- ✅ IDs de porto string com lista entre colchetes
+- ✅ Endpoints v2: nearested-harbor, geo-tabua-mare, usage
 
 ### Testes de Integração (`integration_test.go`)
 - ✅ Listagem de estados
 - ✅ Listagem de portos por estado
 - ✅ Obtenção de detalhes de porto
 - ✅ Obtenção de tábua de marés
+- ✅ Porto mais próximo por estado
+- ✅ Tábua de marés por geolocalização
 
 ### Teste Manual (`cmd/test/main.go`)
 - ✅ Listagem de estados
@@ -50,6 +55,9 @@ go run cmd/test/main.go
 - ✅ Detalhes de um porto específico
 - ✅ Tábua de marés para dias específicos
 - ✅ Consulta de múltiplos portos
+- ✅ Porto mais próximo por estado
+- ✅ Tábua de marés por geolocalização
+- ✅ Uso da cota (opcional: defina `TABUAMARE_API_KEY`)
 - ✅ Validação de erros
 
 ## 🚀 Exemplos de Uso

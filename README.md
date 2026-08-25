@@ -6,7 +6,7 @@ Este repositório reúne diversas SDKs para integração com a API de Tábua da 
 
 A Tábua da Maré é um projeto que disponibiliza informações sobre marés através de uma API REST. Este repositório centraliza as SDKs desenvolvidas para consumir essa API em diferentes linguagens, tornando a integração mais simples e acessível para desenvolvedores.
 
-Para mais informações sobre o serviço, acesse: [tabuamare.devtu.qzz.io](https://tabuamare.devtu.qzz.io)
+Para mais informações sobre o serviço, acesse: [tabuamare.api.br](https://tabuamare.api.br)
 
 ## Projetos Relacionados
 

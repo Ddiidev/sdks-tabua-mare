@@ -44,7 +44,7 @@ func TestIntegration_GetHarborNames(t *testing.T) {
 
 	t.Logf("Found %d harbors in SC", len(harbors))
 	for _, h := range harbors {
-		t.Logf("  - ID: %d, Name: %s", h.ID, h.HarborName)
+		t.Logf("  - ID: %s, Name: %s", h.ID, h.HarborName)
 	}
 }
 
@@ -53,13 +53,13 @@ func TestIntegration_GetHarbor(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	harbor, err := client.GetHarbor(ctx, 1)
+	harbor, err := client.GetHarbor(ctx, "pb01")
 	if err != nil {
 		t.Fatalf("failed to get harbor: %v", err)
 	}
 
-	if harbor.ID != 1 {
-		t.Errorf("expected harbor ID 1, got %d", harbor.ID)
+	if harbor.ID != "pb01" {
+		t.Errorf("expected harbor ID pb01, got %s", harbor.ID)
 	}
 
 	t.Logf("Harbor: %s", harbor.HarborName)
@@ -72,7 +72,7 @@ func TestIntegration_GetTideTable(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	tides, err := client.GetTideTable(ctx, 1, 1, []int{1, 2, 3})
+	tides, err := client.GetTideTable(ctx, "pb01", 1, []int{1, 2, 3})
 	if err != nil {
 		t.Fatalf("failed to get tide table: %v", err)
 	}
@@ -88,4 +88,34 @@ func TestIntegration_GetTideTable(t *testing.T) {
 			t.Logf("  Day %d (%s): %d tide records", day.Day, day.WeekdayName, len(day.Hours))
 		}
 	}
+}
+
+func TestIntegration_GetNearestHarborByState(t *testing.T) {
+	client := NewClient()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	harbor, err := client.GetNearestHarborByState(ctx, "pb", -7.11509, -34.864)
+	if err != nil {
+		t.Fatalf("failed to get nearest harbor by state: %v", err)
+	}
+
+	t.Logf("Nearest harbor in PB: %s (%s)", harbor.HarborName, harbor.ID)
+}
+
+func TestIntegration_GetGeoTideTable(t *testing.T) {
+	client := NewClient()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	tides, err := client.GetGeoTideTable(ctx, -7.11509, -34.864, "pb", 1, []int{1})
+	if err != nil {
+		t.Fatalf("failed to get geo tide table: %v", err)
+	}
+
+	if len(tides) == 0 {
+		t.Fatal("expected at least one tide table")
+	}
+
+	t.Logf("Geo tide table for %s", tides[0].HarborName)
 }

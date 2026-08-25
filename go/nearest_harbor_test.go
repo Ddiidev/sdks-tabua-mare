@@ -10,43 +10,42 @@ import (
 	"testing"
 )
 
+func mockNearestHarborResponse() NearestHarborResponse {
+	return NearestHarborResponse{
+		Data: []Harbor{
+			{
+				ID:         "sp01",
+				HarborName: "PORTO DE SANTOS",
+				State:      "sp",
+				Timezone:   "UTC -03.0",
+				Card:       "123",
+				GeoLocation: []GeoLocation{
+					{
+						Lat:          "-23.950520",
+						Lng:          "-46.333308",
+						DecimalLat:   "23° 57' S",
+						DecimalLng:   "46° 20' W",
+						LatDirection: "s",
+						LngDirection: "w",
+					},
+				},
+				MeanLevel: 1.2,
+			},
+		},
+		Total: 1,
+	}
+}
+
 func TestGetNearestHarbor_Success(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/nearest-harbor-independent-state/-23.550520,-46.633308" {
-			t.Errorf("expected path to be /nearest-harbor-independent-state/-23.550520,-46.633308, got %s", r.URL.Path)
+		if r.URL.Path != "/nearest-harbor-independent-state/[-23.550520,-46.633308]" {
+			t.Errorf("expected path to be /nearest-harbor-independent-state/[-23.550520,-46.633308], got %s", r.URL.Path)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		response := NearestHarborResponse{
-			Data: []NearestHarbor{
-				{
-					Harbor: Harbor{
-						ID:         1,
-						HarborName: "PORTO DE SANTOS",
-						State:      "sp",
-						Timezone:   "UTC -03.0",
-						Card:       "123",
-						GeoLocation: []GeoLocation{
-							{
-								Lat:          "-23.950520",
-								Lng:          "-46.333308",
-								DecimalLat:   "23° 57' S",
-								DecimalLng:   "46° 20' W",
-								LatDirection: "s",
-								LngDirection: "w",
-							},
-						},
-						MeanLevel: 1.2,
-					},
-					Distance: 45.5,
-				},
-			},
-			Total: 1,
-		}
-
-		if err := json.NewEncoder(w).Encode(response); err != nil {
+		if err := json.NewEncoder(w).Encode(mockNearestHarborResponse()); err != nil {
 			t.Fatalf("failed to encode response: %v", err)
 		}
 	}))
@@ -66,8 +65,56 @@ func TestGetNearestHarbor_Success(t *testing.T) {
 		t.Errorf("expected harbor name to be 'PORTO DE SANTOS', got %s", harbor.HarborName)
 	}
 
-	if harbor.Distance != 45.5 {
-		t.Errorf("expected distance to be 45.5, got %f", harbor.Distance)
+	if harbor.ID != "sp01" {
+		t.Errorf("expected harbor ID to be 'sp01', got %s", harbor.ID)
+	}
+}
+
+func TestGetNearestHarborByState_Success(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/nearested-harbor/pb/[-7.115090,-34.864000]" {
+			t.Errorf("expected path to be /nearested-harbor/pb/[-7.115090,-34.864000], got %s", r.URL.Path)
+		}
+
+		response := mockNearestHarborResponse()
+		response.Data[0].ID = "pb01"
+		response.Data[0].State = "pb"
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			t.Fatalf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	client := NewClient(WithBaseURL(server.URL))
+	harbor, err := client.GetNearestHarborByState(context.Background(), "PB", -7.11509, -34.864)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if harbor == nil {
+		t.Fatal("expected harbor to be non-nil")
+	}
+
+	if harbor.State != "pb" {
+		t.Errorf("expected state 'pb', got %s", harbor.State)
+	}
+}
+
+func TestGetNearestHarborByState_EmptyState(t *testing.T) {
+	client := NewClient()
+
+	_, err := client.GetNearestHarborByState(context.Background(), "", -7.11509, -34.864)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	var valErr *ValidationError
+	if !errors.As(err, &valErr) {
+		t.Errorf("expected ValidationError, got %T", err)
 	}
 }
 
@@ -135,7 +182,7 @@ func TestGetNearestHarbor_EmptyResponse(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 
 		response := NearestHarborResponse{
-			Data:  []NearestHarbor{},
+			Data:  []Harbor{},
 			Total: 0,
 		}
 

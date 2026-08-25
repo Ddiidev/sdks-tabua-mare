@@ -1,19 +1,25 @@
-# Tide Table API - Integration Guide for Language Models
+# Tábua de Marés API v2 - Integration Guide for Language Models
 
 ## Overview
 
-The Tide Table API provides accurate data about tides on the Brazilian coast. A complete and free REST API for developers, researchers, and sea enthusiasts.
+The Tábua de Marés API provides accurate data about tides on the Brazilian coast. A complete REST API for developers, researchers, and sea enthusiasts.
 
-- **Base URL:** https://tabuamare.devtu.qzz.io/api/v1
+- **Base URL:** https://tabuamare.api.br/api/v2
 - **Format:** JSON
-- **Status:** Active and free
+- **Status:** Active (v2 is the only stable version; all v1 endpoints return HTTP 410 Gone)
 - **Coverage:** 17 Brazilian coastal states
+- **Documentation:** https://tabuamare.api.br/docs
 
 ## Authentication
 
-- **Method:** None
-- **Details:** This API does not require authentication and is for public use. No need to send tokens or API keys.
-- **Rate Limit:** 500 requests per minute per IP to ensure service quality.
+Authentication is optional. Send the api_key in the `Authorization: Bearer <api_key>` header or in the `X-Api-Key` header.
+
+| Plan | Rate limit | Monthly quota |
+|------|-----------|---------------|
+| Anonymous (no key, per IP) | 16 req/min | Unlimited |
+| Free with api_key | 64 req/min | 32.000 req/month |
+| R$ 5/month | 512 req/min | 256.000 req/month |
+| R$ 10/month or R$ 70/year | 2.048 req/min | Unlimited |
 
 ---
 
@@ -26,7 +32,7 @@ All responses follow the same JSON pattern:
   "data": [],
   "total": 0,
   "error": {
-    "msg": "",
+    "message": "",
     "code": 0
   }
 }
@@ -36,6 +42,7 @@ All responses follow the same JSON pattern:
 - The `error` field only appears when there is an error in the request
 - The `data` field contains the requested data
 - The `total` field indicates the number of records returned
+- Harbor IDs are strings like `pb01`, `pe02`, `sc01` (state abbreviation + sequence)
 
 ---
 
@@ -47,15 +54,12 @@ All responses follow the same JSON pattern:
 
 - **Endpoint:** `GET /states`
 - **Description:** Returns the list of all Brazilian coastal states available in the API.
-- **Expected curl example:**
 
 ```bash
 curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/states \
+  --url https://tabuamare.api.br/api/v2/states \
   --header 'accept: application/json'
 ```
-
-_This route does not require parameters._
 
 **Response model:**
 
@@ -82,18 +86,15 @@ _This route does not require parameters._
 #### ➤ List Harbors by State
 
 - **Endpoint:** `GET /harbor_names/{state}`
-- **Description:** Returns a list with the names of harbors in a specific state.
-- **Expected curl example:**
+- **Description:** Returns a list with the harbors of a specific state.
+- **Parameters:**
+  - **state** (string, required): State abbreviation in lowercase. Example: "pb", "sp", "rj", "sc".
 
 ```bash
 curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbor_names/pb \
+  --url https://tabuamare.api.br/api/v2/harbor_names/pb \
   --header 'accept: application/json'
 ```
-
-**Explanation of each URL parameter:**
-
-- **state** (string, required): State abbreviation in lowercase. Example: "pb", "sp", "rj", "sc".
 
 **Response model:**
 
@@ -101,8 +102,8 @@ curl --request GET \
 {
   "data": [
     {
-      "id": 27,
-      "year": 2025,
+      "id": "pb01",
+      "year": 2026,
       "harbor_name": "PORTO DE CABEDELO (ESTADO DA PARAÍBA)",
       "data_collection_institution": "DNPVN"
     }
@@ -111,37 +112,20 @@ curl --request GET \
 }
 ```
 
-**Other examples:**
-
-```bash
-# List harbors in São Paulo
-curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbor_names/sp \
-  --header 'accept: application/json'
-
-# List harbors in Rio de Janeiro
-curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbor_names/rj \
-  --header 'accept: application/json'
-```
-
 ---
 
 #### ➤ Get Harbors by IDs
 
 - **Endpoint:** `GET /harbors/{ids}`
 - **Description:** Returns detailed information about one or more specific harbors by their IDs.
-- **Expected curl example:**
+- **Parameters:**
+  - **ids** (string, required): Harbor ID(s) wrapped in brackets, comma-separated. Example: `[pb01]` or `[pb01,pe01]`. The bracket list format is REQUIRED for multiple IDs.
 
 ```bash
 curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbors/1 \
+  --url 'https://tabuamare.api.br/api/v2/harbors/[pb01]' \
   --header 'accept: application/json'
 ```
-
-**Explanation of each URL parameter:**
-
-- **ids** (integer or string, required): Unique harbor ID or comma-separated IDs. Example: "1" or "1,2,3".
 
 **Response model:**
 
@@ -149,22 +133,22 @@ curl --request GET \
 {
   "data": [
     {
-      "id": 1,
-      "harbor_name": "PORTO DE MACEIÓ (ESTADO DE ALAGOAS)",
-      "state": "al",
+      "id": "pb01",
+      "harbor_name": "PORTO DE CABEDELO (ESTADO DA PARAÍBA)",
+      "state": "pb",
       "timezone": "UTC -03.0",
-      "card": "921",
+      "card": "830",
       "geo_location": [
         {
-          "lat": "-9.683333333333334",
-          "lng": "-35.71666666666667",
-          "decimal_lat": "09° 41' S",
-          "decimal_lng": "35° 43'.5 W",
+          "lat": "-6.97",
+          "lng": "-34.833333333333336",
+          "decimal_lat": "06° 58'.2 S",
+          "decimal_lng": "34° 50'.4 W",
           "lat_direction": "s",
           "lng_direction": "w"
         }
       ],
-      "mean_level": 1.15999999854
+      "mean_level": 1.34
     }
   ],
   "total": 1
@@ -172,21 +156,13 @@ curl --request GET \
 ```
 
 **Response fields:**
-- **id** (integer): Unique harbor ID
+- **id** (string): Harbor ID code (e.g. `pb01`)
 - **harbor_name** (string): Full harbor name
 - **state** (string): State abbreviation
 - **timezone** (string): Time zone
 - **card** (string): Nautical chart code
 - **geo_location** (array): Geographic coordinates (latitude, longitude)
 - **mean_level** (float): Mean tide level in meters
-
-**Example with multiple harbors:**
-
-```bash
-curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbors/1,2,3 \
-  --header 'accept: application/json'
-```
 
 ---
 
@@ -196,22 +172,84 @@ curl --request GET \
 
 - **Endpoint:** `GET /tabua-mare/{harbor}/{month}/{days}`
 - **Description:** Returns tide table data for a specific harbor in a given month and days.
-- **Expected curl example:**
+- **Parameters:**
+  - **harbor** (string, required): Harbor ID code. Example: `pb01`.
+  - **month** (integer, required): Desired month (1-12).
+  - **days** (string, required): Array of days in format "[1,2,10-30]" (URL-encoded). Examples:
+    - Specific days: "[1,2,3,15,30]"
+    - Day range: "[1-15]"
+    - Combination: "[1,5-13,20,25-30]"
 
 ```bash
 curl --request GET \
-  --url 'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/1/1/[1,2,3]' \
+  --url 'https://tabuamare.api.br/api/v2/tabua-mare/pb01/1/[1,2,3]' \
   --header 'accept: application/json'
 ```
 
-**Explanation of each URL parameter:**
+**Response structure:**
+- **year** (integer): Data year
+- **harbor_name**, **state**, **timezone**, **card**, **data_collection_institution**, **mean_level**: harbor metadata
+- **months** (array):
+  - **month_name** (string), **month** (integer)
+  - **days** (array):
+    - **weekday_name** (string), **day** (integer)
+    - **hours** (array): **hour** ("HH:MM:SS") + **level** (float, meters)
 
-- **harbor** (integer, required): Unique harbor ID. Example: 1.
-- **month** (integer, required): Desired month (1-12). Example: 1 (January), 6 (June), 12 (December).
-- **days** (string, required): Array of days in format "[1,2,10-30]". Examples:
-  - Specific days: "[1,2,3,15,30]"
-  - Day range: "[1-15]"
-  - Combination: "[1,5-13,20,25-30]"
+---
+
+### Nearest Harbor
+
+#### ➤ Nearest Harbor by State
+
+- **Endpoint:** `GET /nearested-harbor/{state}/{lat_lng}`
+- **Description:** Returns the nearest harbor to the given coordinates within the specified state.
+- **Parameters:**
+  - **state** (string, required): State abbreviation (ex: pb, rj, sp).
+  - **lat_lng** (string, required): Coordinates in `[lat,lng]` format.
+
+```bash
+curl --request GET \
+  --url 'https://tabuamare.api.br/api/v2/nearested-harbor/pb/[-7.11509,-34.864]'
+```
+
+#### ➤ Nearest Harbor (independent of state)
+
+- **Endpoint:** `GET /nearest-harbor-independent-state/{lat_lng}`
+
+```bash
+curl --request GET \
+  --url 'https://tabuamare.api.br/api/v2/nearest-harbor-independent-state/[-7.11509,-34.864]'
+```
+
+Both return a standard envelope with a single Harbor object in `data` (no distance field).
+
+---
+
+### Tide Table by Geolocation
+
+- **Endpoint:** `GET /geo-tabua-mare/{lat_lng}/{state}/{month}/{days}`
+- **Description:** Returns the tide table of the nearest harbor to the coordinates within the state.
+
+```bash
+curl --request GET \
+  --url 'https://tabuamare.api.br/api/v2/geo-tabua-mare/[-7.11509,-34.864]/pb/1/[1,2,3]'
+```
+
+Note: this endpoint lives under `/api/v2` like the others.
+
+---
+
+### Usage Quota
+
+- **Endpoint:** `GET /usage`
+- **Auth:** Required (`Authorization: Bearer <api_key>` or `X-Api-Key`). Does NOT consume monthly quota.
+- **Notes:** `remaining_rpm`/`remaining_monthly` return `-1` when unlimited.
+
+```bash
+curl --request GET \
+  --url https://tabuamare.api.br/api/v2/usage \
+  --header 'Authorization: Bearer tm_live_...'
+```
 
 **Response model:**
 
@@ -219,85 +257,17 @@ curl --request GET \
 {
   "data": [
     {
-      "year": 2025,
-      "harbor_name": "PORTO DE MACEIÓ (ESTADO DE ALAGOAS)",
-      "state": "al",
-      "timezone": "UTC -03.0",
-      "card": "921",
-      "data_collection_institution": "DHN",
-      "mean_level": 1.1599999666213989,
-      "months": [
-        {
-          "month_name": "January",
-          "month": 1,
-          "days": [
-            {
-              "weekday_name": "friday",
-              "day": 3,
-              "hours": [
-                {
-                  "hour": "06:01:00",
-                  "level": 1.8700000047683716
-                },
-                {
-                  "hour": "12:04:00",
-                  "level": 0.34999999403953552
-                },
-                {
-                  "hour": "18:14:00",
-                  "level": 1.9900000095367432
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "plan": "plan5",
+      "limit_rpm": "512",
+      "used_rpm": "3",
+      "remaining_rpm": "509",
+      "limit_monthly": "256000",
+      "used_monthly": "842",
+      "remaining_monthly": "255158"
     }
   ],
   "total": 1
 }
-```
-
-**Response structure:**
-- **year** (integer): Data year
-- **harbor_name** (string): Harbor name
-- **state** (string): State abbreviation
-- **timezone** (string): Time zone
-- **card** (string): Nautical chart code
-- **data_collection_institution** (string): Institution responsible for the data (DHN or DNPVN)
-- **mean_level** (float): Mean tide level in meters
-- **months** (array): Array with month data
-  - **month_name** (string): Month name
-  - **month** (integer): Month number
-  - **days** (array): Array with day data
-    - **weekday_name** (string): Weekday name
-    - **day** (integer): Day of month
-    - **hours** (array): Array with times and levels
-      - **hour** (string): Tide time (HH:MM:SS format)
-      - **level** (float): Tide level in meters
-
-**Other examples:**
-
-```bash
-# Get tide table for multiple days
-curl --request GET \
-  --url 'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/5/3/[15,16,17,18]' \
-  --header 'accept: application/json'
-
-# Get tide table for a range of days
-curl --request GET \
-  --url 'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/1/6/[1-15]' \
-  --header 'accept: application/json'
-
-# Get tide table for specific days and combined ranges
-curl --request GET \
-  --url 'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/1/12/[1,5-10,15,20-25]' \
-  --header 'accept: application/json'
-
-# Get tide table for entire month
-curl --request GET \
-  --url 'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/1/12/[1-31]' \
-  --header 'accept: application/json'
 ```
 
 ---
@@ -306,10 +276,13 @@ curl --request GET \
 
 ### HTTP Codes
 
-- **200** - Success: Request processed successfully
 - **400** - Bad Request: Malformed request or invalid parameters
+- **401** - Unauthorized: Missing/expired/invalid JWT (auth dashboard routes)
+- **403** - Forbidden: Action not allowed for the user's plan
 - **404** - Not Found: Resource not found
-- **500** - Internal Server Error: Internal server error
+- **410** - Gone: All deprecated V1 endpoints. Use V2.
+- **429** - Too Many Requests: Rate limit exceeded. Header `Retry-After` tells how many seconds to wait (60 for RPM, 3600 for monthly quota).
+- **500** - Internal Server Error
 
 ### Error Format
 
@@ -322,40 +295,24 @@ curl --request GET \
 }
 ```
 
+The error message field is `message`.
+
 ---
 
 ## Complete Usage Workflow
 
-### Example 1: Query Tides for a Specific Harbor
-
 ```bash
 # Step 1: List available states
-curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/states
+curl --request GET --url https://tabuamare.api.br/api/v2/states
 
 # Step 2: List harbors in Santa Catarina
-curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbor_names/sc
+curl --request GET --url https://tabuamare.api.br/api/v2/harbor_names/sc
 
-# Step 3: Get details of a specific harbor (example: ID 10)
-curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbor/10
+# Step 3: Get details of a specific harbor
+curl --request GET --url 'https://tabuamare.api.br/api/v2/harbors/[sc01]'
 
 # Step 4: Get tide table for January, first week
-curl --request GET \
-  --url 'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/10/1/[1-7]'
-```
-
-### Example 2: Query Tides for Multiple Harbors
-
-```bash
-# Get information from multiple harbors
-curl --request GET \
-  --url https://tabuamare.devtu.qzz.io/api/v1/harbor/15,16,17
-
-# Get tide table for specific days of the month
-curl --request GET \
-  --url 'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/15/7/[1,15,30]'
+curl --request GET --url 'https://tabuamare.api.br/api/v2/tabua-mare/sc01/1/[1-7]'
 ```
 
 ---
@@ -366,26 +323,20 @@ curl --request GET \
 
 ```javascript
 // List states
-fetch('https://tabuamare.devtu.qzz.io/api/v1/states')
+fetch('https://tabuamare.api.br/api/v2/states')
   .then(response => response.json())
   .then(data => console.log(data))
   .catch(error => console.error('Error:', error));
 
 // Get tide table
 async function getTabuaMare(harborId, month, days) {
-  try {
-    const response = await fetch(
-      `https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/${harborId}/${month}/${days}`
-    );
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching tide table:', error);
-  }
+  const response = await fetch(
+    `https://tabuamare.api.br/api/v2/tabua-mare/${harborId}/${month}/${encodeURIComponent(days)}`
+  );
+  return response.json();
 }
 
-// Usage
-getTabuaMare(1, 1, '[1,2,3]').then(data => console.log(data));
+getTabuaMare('pb01', 1, '[1,2,3]').then(data => console.log(data));
 ```
 
 ### Python (Requests)
@@ -393,42 +344,32 @@ getTabuaMare(1, 1, '[1,2,3]').then(data => console.log(data));
 ```python
 import requests
 
-# List states
-response = requests.get('https://tabuamare.devtu.qzz.io/api/v1/states')
-states = response.json()
-print(states)
+BASE = 'https://tabuamare.api.br/api/v2'
 
-# Get tide table
+response = requests.get(f'{BASE}/states')
+print(response.json())
+
 def get_tabua_mare(harbor_id, month, days):
-    url = f'https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/{harbor_id}/{month}/{days}'
-    response = requests.get(url)
-    return response.json()
+    return requests.get(f'{BASE}/tabua-mare/{harbor_id}/{month}/{days}').json()
 
-# Usage
-tabua = get_tabua_mare(1, 1, '[1,2,3]')
-print(tabua)
+print(get_tabua_mare('pb01', 1, '[1,2,3]'))
 ```
 
 ### PHP
 
 ```php
 <?php
-// List states
-$url = 'https://tabuamare.devtu.qzz.io/api/v1/states';
-$response = file_get_contents($url);
-$states = json_decode($response, true);
+$base = 'https://tabuamare.api.br/api/v2';
+
+$states = json_decode(file_get_contents($base . '/states'), true);
 print_r($states);
 
-// Get tide table
 function getTabuaMare($harborId, $month, $days) {
-    $url = "https://tabuamare.devtu.qzz.io/api/v1/tabua-mare/{$harborId}/{$month}/{$days}";
-    $response = file_get_contents($url);
-    return json_decode($response, true);
+    global $base;
+    return json_decode(file_get_contents("{$base}/tabua-mare/{$harborId}/{$month}/" . urlencode($days)), true);
 }
 
-// Usage
-$tabua = getTabuaMare(1, 1, '[1,2,3]');
-print_r($tabua);
+print_r(getTabuaMare('pb01', 1, '[1,2,3]'));
 ?>
 ```
 
@@ -447,8 +388,8 @@ print_r($tabua);
 ## Best Practices
 
 - **Cache:** Use caching when possible to reduce requests and improve performance
-- **Rate Limit:** Respect the limit of 500 requests per minute per IP
-- **Error Handling:** Always implement proper error handling
+- **Rate Limit:** Anonymous access is limited to 16 requests/min per IP; create a free api_key for 64 req/min
+- **Error Handling:** Always implement proper error handling (watch for `Retry-After` on 429)
 - **Attribution:** Cite the data source in public applications (DHN/DNPVN)
 - **Validation:** Validate parameters before making requests
 
@@ -456,14 +397,14 @@ print_r($tabua);
 
 ## Additional Information
 
-- **Data Source:** DHN (Directorate of Hydrography and Navigation) and DNPVN
-- **License:** Public and free use
+- **Data Source:** DHN (Diretoria de Hidrografia e Navegação) and DNPVN
+- **License:** Public use (paid plans for higher rate limits)
 - **GitHub:** https://github.com/Ddiidev/tabua_mare_api
-- **Website:** https://tabuamare.devtu.qzz.io
-- **Complete Documentation:** https://tabuamare.devtu.qzz.io/docs
+- **Website:** https://tabuamare.api.br
+- **Complete Documentation:** https://tabuamare.api.br/docs
 
 ---
 
-_This guide was created to help language models and developers integrate effectively with the Tide Table API._
+_This guide was created to help language models and developers integrate effectively with the Tábua de Marés API._
 
 **Developed with ❤️ in Brazil 🇧🇷**

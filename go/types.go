@@ -9,7 +9,7 @@ type StatesResponse struct {
 
 // HarborName representa informações básicas de um porto
 type HarborName struct {
-	ID                        int    `json:"id"`
+	ID                        string `json:"id"`
 	Year                      int    `json:"year"`
 	HarborName                string `json:"harbor_name"`
 	DataCollectionInstitution string `json:"data_collection_institution"`
@@ -34,7 +34,7 @@ type GeoLocation struct {
 
 // Harbor representa informações detalhadas de um porto
 type Harbor struct {
-	ID          int           `json:"id"`
+	ID          string        `json:"id"`
 	HarborName  string        `json:"harbor_name"`
 	State       string        `json:"state"`
 	Timezone    string        `json:"timezone"`
@@ -89,15 +89,28 @@ type TideTableResponse struct {
 	Error *APIError   `json:"error,omitempty"`
 }
 
-// NearestHarbor representa o porto mais próximo de uma coordenada
-type NearestHarbor struct {
-	Harbor
-	Distance float64 `json:"distance_km"`
-}
-
 // NearestHarborResponse representa a resposta da consulta de porto mais próximo
 type NearestHarborResponse struct {
-	Data  []NearestHarbor `json:"data"`
-	Total int             `json:"total"`
-	Error *APIError       `json:"error,omitempty"`
+	Data  []Harbor  `json:"data"`
+	Total int       `json:"total"`
+	Error *APIError `json:"error,omitempty"`
+}
+
+// UsageInfo representa o consumo atual de rate-limit de uma api_key.
+// Os campos numéricos vêm como string na API; "-1" indica limite ilimitado.
+type UsageInfo struct {
+	Plan             string `json:"plan"`
+	LimitRPM         string `json:"limit_rpm"`
+	UsedRPM          string `json:"used_rpm"`
+	RemainingRPM     string `json:"remaining_rpm"`
+	LimitMonthly     string `json:"limit_monthly"`
+	UsedMonthly      string `json:"used_monthly"`
+	RemainingMonthly string `json:"remaining_monthly"`
+}
+
+// UsageResponse representa a resposta da consulta de uso da cota
+type UsageResponse struct {
+	Data  []UsageInfo `json:"data"`
+	Total int         `json:"total"`
+	Error *APIError   `json:"error,omitempty"`
 }

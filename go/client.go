@@ -6,18 +6,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	defaultBaseURL = "https://tabuamare.devtu.qzz.io/api/v1"
+	defaultBaseURL = "https://tabuamare.api.br/api/v2"
 	defaultTimeout = 30 * time.Second
 )
 
-// Client é o cliente HTTP para a API Tide Table
+// Client é o cliente HTTP para a API Tábua de Marés (v2)
 type Client struct {
 	baseURL    string
+	apiKey     string
 	httpClient *http.Client
 }
 
@@ -28,6 +30,13 @@ type ClientOption func(*Client)
 func WithBaseURL(url string) ClientOption {
 	return func(c *Client) {
 		c.baseURL = strings.TrimSuffix(url, "/")
+	}
+}
+
+// WithAPIKey configura a api_key usada na autenticação (header Authorization: Bearer)
+func WithAPIKey(apiKey string) ClientOption {
+	return func(c *Client) {
+		c.apiKey = apiKey
 	}
 }
 
@@ -72,6 +81,11 @@ func (c *Client) doRequest(ctx context.Context, method, path string) ([]byte, er
 
 	req.Header.Set("Accept", "application/json")
 
+	if c.apiKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.apiKey)
+		req.Header.Set("X-Api-Key", c.apiKey)
+	}
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, &NetworkError{Err: err}
@@ -84,14 +98,18 @@ func (c *Client) doRequest(ctx context.Context, method, path string) ([]byte, er
 	}
 
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return nil, ErrRateLimitExceeded
+		retryAfter := parseRetryAfter(resp.Header.Get("Retry-After"))
+		return nil, &RateLimitError{RetryAfter: retryAfter}
 	}
 
 	if resp.StatusCode >= 400 {
-		var apiErr APIError
-		if err := json.Unmarshal(body, &apiErr); err == nil && apiErr.Message != "" {
+		var envelope struct {
+			Error *APIError `json:"error"`
+		}
+		if err := json.Unmarshal(body, &envelope); err == nil && envelope.Error != nil && envelope.Error.Message != "" {
+			apiErr := envelope.Error
 			apiErr.Status = resp.StatusCode
-			return nil, &apiErr
+			return nil, apiErr
 		}
 		return nil, &APIError{
 			Status:  resp.StatusCode,
@@ -101,4 +119,18 @@ func (c *Client) doRequest(ctx context.Context, method, path string) ([]byte, er
 	}
 
 	return body, nil
+}
+
+// parseRetryAfter converte o header Retry-After (segundos) em time.Duration
+func parseRetryAfter(value string) time.Duration {
+	if value == "" {
+		return 0
+	}
+
+	seconds, err := strconv.Atoi(strings.TrimSpace(value))
+	if err != nil || seconds < 0 {
+		return 0
+	}
+
+	return time.Duration(seconds) * time.Second
 }

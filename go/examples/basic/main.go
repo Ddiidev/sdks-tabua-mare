@@ -30,13 +30,13 @@ func main() {
 		log.Fatalf("Erro ao listar portos: %v", err)
 	}
 	for _, harbor := range harbors {
-		fmt.Printf("ID: %d - %s\n", harbor.ID, harbor.HarborName)
+		fmt.Printf("ID: %s - %s\n", harbor.ID, harbor.HarborName)
 	}
 	fmt.Println()
 
 	// Exemplo 3: Obter detalhes de um porto
 	fmt.Println("=== Detalhes do Porto ===")
-	harbor, err := client.GetHarbor(ctx, 1)
+	harbor, err := client.GetHarbor(ctx, "pb01")
 	if err != nil {
 		log.Fatalf("Erro ao obter porto: %v", err)
 	}
@@ -46,7 +46,7 @@ func main() {
 
 	// Exemplo 4: Obter tábua de marés para dias específicos
 	fmt.Println("=== Tábua de Marés ===")
-	tides, err := client.GetTideTable(ctx, 1, 1, []int{1, 2, 3})
+	tides, err := client.GetTideTable(ctx, "pb01", 1, []int{1, 2, 3})
 	if err != nil {
 		log.Fatalf("Erro ao obter tábua de marés: %v", err)
 	}

@@ -3,6 +3,7 @@ package tabuamare
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 	ErrEmptyResponse = errors.New("empty response from API")
 
 	// ErrRateLimitExceeded é retornado quando o limite de requisições é excedido
-	ErrRateLimitExceeded = errors.New("rate limit exceeded: 500 requests per minute")
+	ErrRateLimitExceeded = errors.New("rate limit exceeded")
 
 	// ErrInvalidCoordinates é retornado quando as coordenadas geográficas são inválidas
 	ErrInvalidCoordinates = errors.New("invalid coordinates")
@@ -31,12 +32,29 @@ var (
 // APIError representa um erro retornado pela API
 type APIError struct {
 	Code    int    `json:"code"`
-	Message string `json:"msg"`
+	Message string `json:"message"`
 	Status  int    // HTTP status code
 }
 
 func (e *APIError) Error() string {
 	return fmt.Sprintf("API error (status %d, code %d): %s", e.Status, e.Code, e.Message)
+}
+
+// RateLimitError é retornado quando a API responde 429.
+// Implementa errors.Is com ErrRateLimitExceeded e expõe o header Retry-After.
+type RateLimitError struct {
+	RetryAfter time.Duration // tempo a aguardar antes de tentar novamente
+}
+
+func (e *RateLimitError) Error() string {
+	if e.RetryAfter > 0 {
+		return fmt.Sprintf("rate limit exceeded: retry after %s", e.RetryAfter)
+	}
+	return ErrRateLimitExceeded.Error()
+}
+
+func (e *RateLimitError) Is(target error) bool {
+	return target == ErrRateLimitExceeded
 }
 
 // IsAPIError verifica se um erro é do tipo APIError

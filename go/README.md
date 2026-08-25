@@ -5,7 +5,9 @@
 [![Go Tests](https://github.com/Ddiidev/sdks-tabua-mare/actions/workflows/go-test.yml/badge.svg)](https://github.com/Ddiidev/sdks-tabua-mare/actions/workflows/go-test.yml)
 [![codecov](https://codecov.io/gh/Ddiidev/sdks-tabua-mare/branch/main/graph/badge.svg?flag=go)](https://codecov.io/gh/Ddiidev/sdks-tabua-mare)
 
-SDK oficial em Go para a API Tide Table (Tábua de Marés) - dados precisos sobre marés na costa brasileira.
+SDK oficial em Go para a API Tábua de Marés (v2) - dados precisos sobre marés na costa brasileira.
+
+> **⚠️ v2:** a API migrou para `https://tabuamare.api.br/api/v2`. A v1 foi descontinuada (HTTP 410). Os IDs de porto agora são strings (ex: `pb01`, `pe02`).
 
 ## 🚀 Instalação
 
@@ -68,7 +70,7 @@ func main() {
     fmt.Printf("Portos em SC: %d\n", len(harbors))
     
     // Obter tábua de marés para dias específicos
-    tides, err := client.GetTideTable(ctx, 1, 1, []int{1, 2, 3})
+    tides, err := client.GetTideTable(ctx, "pb01", 1, []int{1, 2, 3})
     if err != nil {
         log.Fatal(err)
     }
@@ -83,12 +85,12 @@ func main() {
         }
     }
     
-    // Encontrar porto mais próximo de São Paulo
+    // Encontrar porto mais próximo de São Paulo (sem restrição de estado)
     nearestHarbor, err := client.GetNearestHarbor(ctx, -23.550520, -46.633308)
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("Porto mais próximo: %s (%.1f km)\n", nearestHarbor.HarborName, nearestHarbor.Distance)
+    fmt.Printf("Porto mais próximo: %s (%s)\n", nearestHarbor.HarborName, nearestHarbor.ID)
 }
 ```
 
@@ -96,9 +98,12 @@ func main() {
 
 - ✅ Listagem de estados costeiros brasileiros
 - ✅ Consulta de portos por estado
-- ✅ Detalhes completos de portos
+- ✅ Detalhes completos de portos (IDs string: `pb01`, `pe02`, ...)
 - ✅ Tábua de marés por período
-- ✅ **Porto mais próximo por coordenadas GPS**
+- ✅ **Porto mais próximo por coordenadas GPS** (geral e por estado)
+- ✅ **Tábua de marés por geolocalização** (`GetGeoTideTable`)
+- ✅ **Consulta de uso da cota** (`GetUsage` com api_key)
+- ✅ **Autenticação opcional via api_key** (`WithAPIKey`)
 - ✅ Suporte a múltiplos portos
 - ✅ Validação de parâmetros
 - ✅ Tratamento de erros robusto
@@ -114,6 +119,11 @@ import "time"
 // Cliente com timeout customizado
 client := tabuamare.NewClient(
     tabuamare.WithTimeout(60 * time.Second),
+)
+
+// Cliente com api_key (64 req/min grátis; sem chave: 16 req/min por IP)
+client := tabuamare.NewClient(
+    tabuamare.WithAPIKey("tm_live_..."),
 )
 
 // Cliente com URL base customizada
@@ -180,7 +190,7 @@ Para publicar uma nova versão, veja [PUBLISHING.md](PUBLISHING.md).
 
 ## 📖 Documentação
 
-- [Documentação da API](https://tabuamare.devtu.qzz.io/docs)
+- [Documentação da API](https://tabuamare.api.br/docs)
 - [pkg.go.dev](https://pkg.go.dev/github.com/Ddiidev/sdks-tabua-mare/go)
 - [Repositório da API](https://github.com/Ddiidev/tabua_mare_api)
 

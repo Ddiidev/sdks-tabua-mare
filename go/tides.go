@@ -64,9 +64,9 @@ func (dr *DayRange) String() string {
 }
 
 // GetTideTable retorna a tábua de marés para um porto, mês e dias específicos
-func (c *Client) GetTideTable(ctx context.Context, harborID, month int, days []int) ([]TideTable, error) {
-	if harborID <= 0 {
-		return nil, &ValidationError{Field: "harborID", Message: "harbor ID must be a positive integer"}
+func (c *Client) GetTideTable(ctx context.Context, harborID string, month int, days []int) ([]TideTable, error) {
+	if strings.TrimSpace(harborID) == "" {
+		return nil, &ValidationError{Field: "harborID", Message: "harbor ID cannot be empty"}
 	}
 
 	if month < 1 || month > 12 {
@@ -78,7 +78,7 @@ func (c *Client) GetTideTable(ctx context.Context, harborID, month int, days []i
 		return nil, err
 	}
 
-	path := fmt.Sprintf("/tabua-mare/%d/%d/%s", harborID, month, url.PathEscape(dayRange.String()))
+	path := fmt.Sprintf("/tabua-mare/%s/%d/%s", harborID, month, url.PathEscape(dayRange.String()))
 
 	body, err := c.doRequest(ctx, "GET", path)
 	if err != nil {
@@ -98,21 +98,21 @@ func (c *Client) GetTideTable(ctx context.Context, harborID, month int, days []i
 }
 
 // GetTideTableForMonth retorna a tábua de marés para um mês inteiro
-func (c *Client) GetTideTableForMonth(ctx context.Context, harborID, month int) ([]TideTable, error) {
+func (c *Client) GetTideTableForMonth(ctx context.Context, harborID string, month int) ([]TideTable, error) {
 	dayRange, err := NewDayRangeFromInterval(1, 31)
 	if err != nil {
 		return nil, err
 	}
 
-	if harborID <= 0 {
-		return nil, &ValidationError{Field: "harborID", Message: "harbor ID must be a positive integer"}
+	if strings.TrimSpace(harborID) == "" {
+		return nil, &ValidationError{Field: "harborID", Message: "harbor ID cannot be empty"}
 	}
 
 	if month < 1 || month > 12 {
 		return nil, ErrInvalidMonth
 	}
 
-	path := fmt.Sprintf("/tabua-mare/%d/%d/%s", harborID, month, url.PathEscape(dayRange.String()))
+	path := fmt.Sprintf("/tabua-mare/%s/%d/%s", harborID, month, url.PathEscape(dayRange.String()))
 
 	body, err := c.doRequest(ctx, "GET", path)
 	if err != nil {
