@@ -35,6 +35,8 @@ async function test(description, fn) {
   }
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
  * Suite de testes
  */
@@ -58,6 +60,7 @@ async function runTests() {
   });
 
   // Teste 2: Listar estados
+  await sleep(4000);
   await test('getStates() deve retornar lista de estados', async () => {
     const result = await client.getStates();
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -68,6 +71,7 @@ async function runTests() {
   });
 
   // Teste 3: Listar portos por estado
+  await sleep(4000);
   await test('getHarborsByState() deve retornar portos com IDs string (ex: pb01)', async () => {
     const result = await client.getHarborsByState('pb');
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -82,6 +86,7 @@ async function runTests() {
   });
 
   // Teste 4: Obter detalhes de um porto por ID string
+  await sleep(4000);
   await test('getHarbors() deve retornar detalhes de um porto por ID string', async () => {
     const result = await client.getHarbors('pb01');
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -97,6 +102,7 @@ async function runTests() {
   });
 
   // Teste 5: Obter múltiplos portos por IDs string
+  await sleep(4000);
   await test('getHarbors() deve aceitar múltiplos IDs', async () => {
     const result = await client.getHarbors(['pb01', 'pe01']);
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -110,6 +116,7 @@ async function runTests() {
   });
 
   // Teste 6: Obter tábua de maré para dias específicos
+  await sleep(4000);
   await test('getTabuaMare() deve retornar tábua de maré para dias específicos', async () => {
     const result = await client.getTabuaMare('pb01', 1, [1, 2, 3]);
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -126,6 +133,7 @@ async function runTests() {
   });
 
   // Teste 7: Obter tábua de maré para um período
+  await sleep(4000);
   await test('getTabuaMareRange() deve retornar tábua de maré para um período', async () => {
     const result = await client.getTabuaMareRange('pb01', 1, 1, 7);
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -143,6 +151,7 @@ async function runTests() {
   });
 
   // Teste 8: Obter tábua de maré para mês completo
+  await sleep(4000);
   await test('getTabuaMareMonth() deve retornar tábua de maré para mês completo', async () => {
     const result = await client.getTabuaMareMonth('pb01', 1);
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -153,6 +162,7 @@ async function runTests() {
   });
 
   // Teste 9: Validar estrutura de dados de hora
+  await sleep(4000);
   await test('Dados de hora devem ter estrutura correta', async () => {
     const result = await client.getTabuaMare('pb01', 1, [1]);
     const day = result.data[0].months[0].days[0];
@@ -164,6 +174,7 @@ async function runTests() {
   });
 
   // Teste 10: Porto mais próximo independente de estado
+  await sleep(4000);
   await test('getNearestHarbor() deve retornar envelope data/total da v2', async () => {
     const result = await client.getNearestHarbor(-23.550520, -46.633308);
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -178,6 +189,7 @@ async function runTests() {
   });
 
   // Teste 11: Porto mais próximo por estado
+  await sleep(4000);
   await test('getNearestHarborByState() deve retornar porto dentro do estado', async () => {
     const result = await client.getNearestHarborByState('pb', -7.11509, -34.864);
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -186,6 +198,7 @@ async function runTests() {
   });
 
   // Teste 12: Tábua de maré por geolocalização
+  await sleep(4000);
   await test('getGeoTabuaMare() deve retornar tábua do porto mais próximo', async () => {
     const result = await client.getGeoTabuaMare(-7.11509, -34.864, 'pb', 1, [1]);
     assert.ok(result, 'Resultado não deve ser nulo');
@@ -247,6 +260,7 @@ async function runTests() {
   });
 
   // Teste 18: Coordenadas do Rio de Janeiro
+  await sleep(4000);
   await test('getNearestHarbor() deve funcionar com coordenadas do Rio de Janeiro', async () => {
     const result = await client.getNearestHarbor(-22.906847, -43.172896); // Rio de Janeiro
     assert.ok(result, 'Resultado não deve ser nulo');
