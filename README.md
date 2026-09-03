@@ -22,16 +22,27 @@ Este projeto faz parte de um ecossistema maior:
 SDK para Node.js e navegadores com suporte completo a TypeScript.
 
 - 📦 **Instalação**: `npm install tabua-mare-sdk`
-- 📖 **Documentação**: [README completo](./JsTs/README.md)
+- 📖 **Pacote npm**: [tabua-mare-sdk](https://www.npmjs.com/package/tabua-mare-sdk)
+- 📖 **Documentação**: [README completo](./tabua-mare-sdk-js-ts/README.md)
 - ✨ **Características**: Zero dependências, totalmente tipado, funciona em Node.js e Browser
 
 ### Go
 
 SDK oficial em Go com suporte a context e configuração flexível.
 
-- 📦 **Instalação**: `go get github.com/Ddiidev/sdks-tabua-mare/go`
-- 📖 **Documentação**: [README completo](./go/README.md)
+- 📦 **Instalação**: `go get github.com/Ddiidev/sdks-tabua-mare/tabua-mare-sdk-go`
+- 📖 **Pacote e documentação**: [pkg.go.dev](https://pkg.go.dev/github.com/Ddiidev/sdks-tabua-mare/tabua-mare-sdk-go)
+- 📖 **README completo**: [tabua-mare-sdk-go](./tabua-mare-sdk-go/README.md)
 - ✨ **Características**: Zero dependências externas, validação de parâmetros, tratamento robusto de erros
+
+### C#/.NET
+
+Cliente .NET para a API v2, distribuído pelo NuGet.
+
+- 📦 **Instalação**: `dotnet add package TabuaMare.SDK`
+- 📦 **Pacote NuGet**: [TabuaMare.SDK](https://www.nuget.org/packages/TabuaMare.SDK/)
+- 📖 **Documentação**: [README completo](./tabua-mare-sdk-csharp/README.md)
+- ✨ **Características**: cliente tipado, autenticação por API key e suporte a consultas por geolocalização
 
 ## Início Rápido
 
@@ -42,7 +53,10 @@ Escolha a SDK da sua linguagem preferida e siga a documentação específica:
 npm install tabua-mare-sdk
 
 # Go
-go get github.com/Ddiidev/sdks-tabua-mare/go
+go get github.com/Ddiidev/sdks-tabua-mare/tabua-mare-sdk-go
+
+# C#/.NET
+dotnet add package TabuaMare.SDK
 ```
 
 Cada SDK possui sua própria documentação com exemplos de uso, instalação e configuração. Consulte os links acima para mais detalhes.
