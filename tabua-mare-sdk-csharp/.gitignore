@@ -1,6 +1,9 @@
 bin/
 obj/
-*.user
 .vs/
+*.user
+*.suo
 TestResults/
+packages/
 *.nupkg
+*.snupkg

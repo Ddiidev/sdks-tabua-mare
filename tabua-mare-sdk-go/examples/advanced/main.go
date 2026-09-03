@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	tabuamare "github.com/Ddiidev/sdks-tabua-mare/go"
+	tabuamare "github.com/Ddiidev/sdks-tabua-mare/tabua-mare-sdk-go"
 )
 
 func main() {
