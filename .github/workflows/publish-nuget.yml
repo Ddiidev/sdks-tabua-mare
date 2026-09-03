@@ -1,0 +1,41 @@
+name: Test and Publish C# SDK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tabua-mare-sdk-csharp/**"
+      - ".github/workflows/publish-nuget.yml"
+  workflow_dispatch:
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: tabua-mare-sdk-csharp
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run tests
+        run: dotnet test tests/TabuaMare.Tests/TabuaMare.Tests.csproj --no-restore --configuration Release
+
+      - name: Pack NuGet package
+        run: dotnet pack src/TabuaMare/TabuaMare.csproj --no-restore --configuration Release --output ./nupkg
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push "./nupkg/*.nupkg" --api-key "$NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

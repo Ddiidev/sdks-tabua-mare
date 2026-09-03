@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "JsTs/**"
+      - "tabua-mare-sdk-js-ts/**"
       - ".github/workflows/publish-jsjs.yml"
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: JsTs
+        working-directory: tabua-mare-sdk-js-ts
 
     steps:
       - name: Checkout code

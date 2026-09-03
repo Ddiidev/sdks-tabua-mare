@@ -1,6 +1,6 @@
-# Tábua de Marés SDK - JavaScript/TypeScript
+# Tábua de Maré — cliente JavaScript/TypeScript
 
-SDK JavaScript/TypeScript para integração com a API Tábua de Marés do Brasil.
+Cliente JavaScript/TypeScript para integração com a API de Tábua de Maré do Brasil.
 
 ## Sobre o Projeto
 
@@ -8,7 +8,7 @@ Este SDK faz parte do ecossistema Tábua da Maré:
 
 - 🌊 **API Principal**: [tabua_mare_api](https://github.com/Ddiidev/tabua_mare_api) - API REST que serve os dados de tábua da maré
 - 📄 **Processador de Dados**: [tabua_mare_convert_pdf2db](https://github.com/Ddiidev/tabua_mare_convert_pdf2db) - Converte PDFs de tábua da maré para o banco de dados
-- 📦 **SDKs**: [sdks-tabua-marea](https://github.com/Ddiidev/sdks-tabua-marea) - Repositório com SDKs para diversas linguagens
+- 📦 **Clientes**: [sdks-tabua-mare](https://github.com/Ddiidev/sdks-tabua-mare) - Monorepo com clientes para diversas linguagens
 
 Para mais informações, acesse: [tabuamare.api.br](https://tabuamare.api.br)
 
@@ -23,6 +23,25 @@ Para mais informações, acesse: [tabuamare.api.br](https://tabuamare.api.br)
 - ✅ Totalmente tipado
 - ✅ Autenticação opcional via api_key
 - ✅ Porto mais próximo (geral e por estado) e tábua por geolocalização
+
+## Autenticação
+
+A chave é opcional para endpoints públicos. Quando configurada em `apiKey`, o cliente envia:
+
+```http
+Authorization: Bearer <api_key>
+X-Api-Key: <api_key>
+```
+
+Informe somente o valor da chave em `apiKey`; não inclua o prefixo `Bearer`.
+
+```javascript
+const client = new TabuaMareClient({
+  apiKey: process.env.TABUAMARE_API_KEY,
+});
+```
+
+Obtenha ou gerencie a chave no [dashboard](https://tabuamare.api.br/dashboard). O método `getUsage()` exige uma chave configurada. Consulte a seção [Como enviar a API Key](https://tabuamare.api.br/docs#api-key-header) para limites e códigos de resposta.
 
 ## Instalação
 
